@@ -18,17 +18,17 @@ class Features(BaseModel):
     point_of_contact: str
 
 
-# TODO: 학습 코드에서 저장한 베스트 모델을 가져올 것 (house_rent:latest)
+# 학습 코드에서 저장한 베스트 모델을 가져올 것 (house_rent:latest)
+bento_ml = bentoml.sklearn.get("house_rent:latest")
+model_runner = bento_ml.to_runner()
 
-model_runner = bento_model.to_runner()
-
-# TODO: "rent_house_regressor"라는 이름으로 서비스를 띄우기
+svc = bentoml.Service("rent_house_regressor", runners=[model_runner])
 
 
-@svc.api(
-    # TODO: Features 클래스를 JSON으로 받아오고 Numpy NDArray를 반환하도록 데코레이터 작성
-)
-async def predict(input_data: Features) -> npt.NDArray:
+@svc.api(input=JSON(pydantic_model=Features), output=NumpyNdarray())
+async def predict(input_data: Features) -> npt.NDArray:  ## 비동기 함수: async
     input_df = pd.DataFrame([input_data.dict()])
-    log_pred = await model_runner.predict.async_run(input_df)
-    return np.expm1(log_pred)
+    log_pred = await model_runner.predict.async_run(
+        input_df
+    )  ## 비동기 실행: await, async_run
+    return np.expm1(log_pred)  ## 로그변환 되어 있음 (지수변환 필요)

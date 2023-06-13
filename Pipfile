@@ -13,6 +13,7 @@ rich = "*"
 category-encoders = "==2.6.1"
 pydantic = "==1.10.8"
 joblib = "==1.2.0"
+deepchecks = {editable = true, git = "https://github.com/deepchecks/deepchecks"}
 
 [dev-packages]
 black = "*"
