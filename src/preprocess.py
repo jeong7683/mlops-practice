@@ -23,7 +23,14 @@ def extract_floor(floor_info: str) -> int:
     Args:
         floor_info (str): 층수 정보
     """
-    # TODO
+    temp_floor = floor_info.split(" out of ")
+
+    if temp_floor[0].isnumeric():
+        floor = int(temp_floor[0])
+    else:
+        floor = 0
+
+    return floor
 
 
 def floor_extractor(df: pd.DataFrame, col: str) -> pd.DataFrame:
@@ -42,21 +49,20 @@ def floor_extractor(df: pd.DataFrame, col: str) -> pd.DataFrame:
     return df
 
 
-# TODO: 전처리 파이프라인 작성
-# 1. 방의 크기는 제곱근을 적용함 (FunctionTransformer 사용)
+# 1. 방의 크기는 제곱근을 적용함 (FunctionTransformer 사용) / fit과 transform이 없는 함수에 대해 만들어 주는 것
 # 2. 층수는 실제 층수를 추출하되 숫자가 아닌 Basement 등은 0층으로 표기함
 # 3. 범주형 변수(CAT_FEATURES)는 타겟 인코딩 적용 (from category_encoders import TargetEncoder)
 preprocess_pipeline = ColumnTransformer(
     transformers=[
-        # TODO,
+        ("sqrt_transformer", FunctionTransformer(np.sqrt), ["size"]),
         (
             "floor_extractor",
             FunctionTransformer(floor_extractor, kw_args={"col": "floor"}),
             ["floor"],
         ),
-        # TODO,
+        ("target_encoder", TargetEncoder(), CAT_FEATURES),
     ],
-    remainder="passthrough",
-    verbose_feature_names_out=False,
+    remainder="passthrough",  ## 나머지 변수는 놔둬라 (디폴트는 버리는 옵션임)
+    verbose_feature_names_out=False,  ## 변수명은 원래변수명 덮어 쓰는 구조로 가져갈 것
 )
-preprocess_pipeline.set_output(transform="pandas")
+preprocess_pipeline.set_output(transform="pandas")  ## 디폴트: np.ndarray
